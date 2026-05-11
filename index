@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roblox Vault — Find Your Next Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0d0d0f; --surface:#16161a; --surface2:#1e1e24; --border:#2a2a35;
+    --accent:#6ee7b7; --accent2:#f472b6; --accent3:#a78bfa; --accent4:#fbbf24;
+    --accent5:#f87171; --text:#f0eff4; --muted:#6b6a7a; --tag-bg:#1e1e2e;
+  }
+  body { background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; min-height:100vh; }
+
+.header { padding:2.5rem 2rem 1.25rem; border-bottom:1px solid var(–border); }
+.header h1 { font-size:2.6rem; font-weight:800; letter-spacing:-0.05em; line-height:1; }
+.accent-dot { color:var(–accent); }
+.tagline { font-size:0.75rem; color:var(–muted); font-family:‘IBM Plex Mono’,monospace; margin-top:0.5rem; }
+
+.search-wrap { padding:1.25rem 2rem 0; }
+.search { background:var(–surface2); border:1px solid var(–border); color:var(–text); border-radius:6px; padding:0.6rem 1rem; font-family:‘IBM Plex Mono’,monospace; font-size:0.85rem; width:100%; outline:none; transition:border-color 0.15s; }
+.search:focus { border-color:var(–accent); }
+.search::placeholder { color:var(–muted); }
+
+.filter-group { padding:0.85rem 2rem; display:flex; flex-wrap:wrap; gap:0.4rem; align-items:center; border-bottom:1px solid var(–border); }
+.filter-label { font-size:0.62rem; color:var(–muted); font-family:‘IBM Plex Mono’,monospace; margin-right:0.25rem; min-width:42px; }
+.filter-label.gold { color:var(–accent4); }
+.filter-label.pink { color:var(–accent5); }
+.filter-btn { background:var(–surface2); border:1px solid var(–border); color:var(–muted); border-radius:2rem; padding:0.32rem 0.85rem; font-size:0.73rem; font-family:‘Syne’,sans-serif; cursor:pointer; transition:all 0.15s; font-weight:500; }
+.filter-btn:hover { border-color:var(–accent); color:var(–accent); }
+.filter-btn.active { background:var(–accent); color:#0d0d0f; border-color:var(–accent); font-weight:700; }
+.filter-btn.grind-btn:hover { border-color:var(–accent4); color:var(–accent4); }
+.filter-btn.grind-btn.active { background:var(–accent4); border-color:var(–accent4); color:#0d0d0f; }
+.filter-btn.brainrot-btn:hover { border-color:var(–accent5); color:var(–accent5); }
+.filter-btn.brainrot-btn.active { background:var(–accent5); border-color:var(–accent5); color:#0d0d0f; }
+.filter-btn.popular-btn:hover { border-color:#fb923c; color:#fb923c; }
+.filter-btn.popular-btn.active { background:#fb923c; border-color:#fb923c; color:#0d0d0f; }
+
+.count { font-size:0.7rem; color:var(–muted); font-family:‘IBM Plex Mono’,monospace; padding:0.65rem 2rem; border-bottom:1px solid var(–border); display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
+.count span { color:var(–accent); font-weight:500; }
+.live-indicator { display:flex; align-items:center; gap:0.35rem; font-size:0.65rem; color:var(–muted); }
+.live-dot { width:6px; height:6px; border-radius:50%; background:#f87171; display:inline-block; animation:pulse 2s infinite; }
+
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1px; background:var(–border); }
+.card { background:var(–surface); padding:1.4rem; cursor:pointer; transition:background 0.15s; display:flex; flex-direction:column; gap:0.65rem; position:relative; overflow:hidden; }
+.card:hover { background:var(–surface2); }
+.card-emoji { font-size:2.4rem; line-height:1; }
+.card-name { font-size:1rem; font-weight:700; letter-spacing:-0.02em; }
+.card-desc { font-size:0.78rem; color:var(–muted); line-height:1.55; font-family:‘IBM Plex Mono’,monospace; }
+.card-tags { display:flex; flex-wrap:wrap; gap:0.3rem; margin-top:auto; padding-top:0.5rem; }
+.tag { font-size:0.65rem; font-family:‘IBM Plex Mono’,monospace; padding:0.2rem 0.5rem; border-radius:2px; background:var(–tag-bg); border:1px solid var(–border); }
+.tag.genre       { color:var(–accent3); border-color:rgba(167,139,250,0.2); }
+.tag.vibe        { color:var(–accent);  border-color:rgba(110,231,183,0.2); }
+.tag.grind-tag   { color:var(–accent4); border-color:rgba(251,191,36,0.2); }
+.tag.brainrot-tag{ color:var(–accent5); border-color:rgba(248,113,113,0.2); }
+.players { font-size:0.7rem; color:var(–muted); font-family:‘IBM Plex Mono’,monospace; display:flex; align-items:center; gap:0.35rem; }
+.dot { width:6px; height:6px; border-radius:50%; background:var(–accent); display:inline-block; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+.visits-display { font-size:0.68rem; color:var(–muted); font-family:‘IBM Plex Mono’,monospace; }
+.visits-display.live { color:var(–accent); }
+
+.badge { position:absolute; top:0.85rem; right:0.85rem; font-size:0.6rem; font-weight:700; font-family:‘IBM Plex Mono’,monospace; padding:0.15rem 0.45rem; border-radius:2px; }
+.badge.new       { background:var(–accent2); color:#0d0d0f; }
+.badge.grind     { background:var(–accent4); color:#0d0d0f; }
+.badge.brainrot  { background:var(–accent5); color:#0d0d0f; }
+.badge.popular   { background:#fb923c;        color:#0d0d0f; }
+.empty { padding:4rem 2rem; text-align:center; color:var(–muted); font-family:‘IBM Plex Mono’,monospace; font-size:0.9rem; grid-column:1/-1; }
+
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:200; display:none; align-items:center; justify-content:center; padding:1rem; }
+.overlay.open { display:flex; }
+.modal { background:var(–surface); border:1px solid var(–border); border-radius:10px; width:100%; max-width:580px; max-height:92vh; overflow-y:auto; position:relative; }
+.modal-close { position:absolute; top:1rem; right:1rem; background:var(–surface2); border:1px solid var(–border); color:var(–muted); width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; transition:all 0.15s; z-index:10; }
+.modal-close:hover { color:var(–text); border-color:var(–text); }
+.modal-header { padding:1.75rem; border-bottom:1px solid var(–border); display:flex; gap:1.25rem; align-items:flex-start; }
+.modal-icon { font-size:3.5rem; flex-shrink:0; background:var(–surface2); width:82px; height:82px; border-radius:14px; display:flex; align-items:center; justify-content:center; border:1px solid var(–border); }
+.modal-meta { flex:1; min-width:0; }
+.modal-title { font-size:1.5rem; font-weight:800; letter-spacing:-0.03em; line-height:1.1; margin-bottom:0.4rem; }
+.modal-dev { font-size:0.72rem; color:var(–muted); font-family:‘IBM Plex Mono’,monospace; margin-bottom:0.6rem; }
+.modal-players { font-size:0.75rem; font-family:‘IBM Plex Mono’,monospace; display:flex; align-items:center; gap:0.4rem; color:var(–accent); }
+.modal-body { padding:1.75rem; }
+.modal-label { font-size:0.63rem; color:var(–muted); font-family:‘IBM Plex Mono’,monospace; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.5rem; }
+.modal-desc { font-size:0.86rem; color:var(–text); line-height:1.75; font-family:‘IBM Plex Mono’,monospace; opacity:0.85; margin-bottom:1.25rem; }
+.modal-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:1.5rem; }
+.modal-tag { font-size:0.7rem; font-family:‘IBM Plex Mono’,monospace; padding:0.3rem 0.75rem; border-radius:3px; background:var(–tag-bg); border:1px solid var(–border); }
+.modal-tag.genre       { color:var(–accent3); border-color:rgba(167,139,250,0.2); }
+.modal-tag.vibe        { color:var(–accent);  border-color:rgba(110,231,183,0.2); }
+.modal-tag.grind-tag   { color:var(–accent4); border-color:rgba(251,191,36,0.2); }
+.modal-tag.brainrot-tag{ color:var(–accent5); border-color:rgba(248,113,113,0.2); }
+.modal-stats { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(–border); border:1px solid var(–border); border-radius:8px; overflow:hidden; margin-bottom:1.5rem; }
+.stat { background:var(–surface2); padding:0.85rem 1.1rem; }
+.stat-label { font-size:0.63rem; color:var(–muted); font-family:‘IBM Plex Mono’,monospace; margin-bottom:0.25rem; }
+.stat-val { font-size:0.95rem; font-weight:700; color:var(–text); }
+.stat-val.live { color:var(–accent); }
+.btn-play { width:100%; padding:0.8rem; background:var(–accent); color:#0d0d0f; border:none; border-radius:5px; font-family:‘Syne’,sans-serif; font-size:0.95rem; font-weight:700; cursor:pointer; transition:opacity 0.15s; text-decoration:none; display:block; text-align:center; }
+.btn-play:hover { opacity:0.85; }
+
+footer { border-top:1px solid var(–border); padding:1.5rem 2rem; font-size:0.7rem; color:var(–muted); font-family:‘IBM Plex Mono’,monospace; display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; }
+
+@media(max-width:600px){
+.header { padding:1.5rem 1rem 1rem; }
+.header h1 { font-size:1.8rem; }
+.search-wrap,.filter-group,.count { padding-left:1rem; padding-right:1rem; }
+.modal-header { flex-direction:column; }
+footer { padding:1rem; }
+}
+</style>
+
+</head>
+<body>
+
+<header class="header">
+  <h1>ROBLOX<span class="accent-dot">·</span>VAULT</h1>
+  <p class="tagline">// find your next obsession. no robux required.</p>
+</header>
+
+<div class="search-wrap">
+  <input class="search" id="search" type="text" placeholder="search games, genres, vibes...">
+</div>
+
+<div class="filter-group">
+  <span class="filter-label">genre:</span>
+  <button class="filter-btn active" data-filter="all">all</button>
+  <button class="filter-btn" data-filter="obby">obby</button>
+  <button class="filter-btn" data-filter="tycoon">tycoon</button>
+  <button class="filter-btn" data-filter="roleplay">roleplay</button>
+  <button class="filter-btn" data-filter="pvp">pvp</button>
+  <button class="filter-btn" data-filter="horror">horror</button>
+  <button class="filter-btn" data-filter="simulator">simulator</button>
+  <button class="filter-btn" data-filter="adventure">adventure</button>
+  <button class="filter-btn" data-filter="military">🪖 military</button>
+</div>
+<div class="filter-group">
+  <span class="filter-label gold">grind:</span>
+  <button class="filter-btn grind-btn" data-filter="grind">⚡ grind picks</button>
+  <span class="filter-label pink" style="margin-left:0.75rem">brainrot:</span>
+  <button class="filter-btn brainrot-btn" data-filter="brainrot">🧠 brainrot</button>
+  <span class="filter-label" style="color:#fb923c;margin-left:0.75rem">hot:</span>
+  <button class="filter-btn popular-btn" data-filter="popular">🔥 popular</button>
+</div>
+
+<div class="count">
+  <span>showing <span id="count-num">0</span> games</span>
+  <span class="live-indicator"><span class="live-dot"></span>visit counts live via roblox api</span>
+</div>
+
+<main class="grid" id="grid"></main>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <button class="modal-close" id="modal-close">✕</button>
+    <div class="modal-header">
+      <div class="modal-icon" id="modal-icon"></div>
+      <div class="modal-meta">
+        <div class="modal-title" id="modal-title"></div>
+        <div class="modal-dev"   id="modal-dev"></div>
+        <div class="modal-players"><span class="dot"></span><span id="modal-players"></span> playing now</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-label">about this game</div>
+      <div class="modal-desc" id="modal-desc"></div>
+      <div class="modal-tags" id="modal-tags"></div>
+      <div class="modal-stats" id="modal-stats"></div>
+      <a class="btn-play" id="modal-play" target="_blank" rel="noopener noreferrer">▶ play on roblox</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>// roblox vault — built for the culture</span>
+  <span>not affiliated with roblox corporation</span>
+</footer>
+
+<script>
+// ── GAMES DATA ────────────────────────────────────────────────────────────────
+// All placeIds verified from roblox.com URLs.
+// isBrainrot = hidden from all/genre/grind tabs; only shows on brainrot tab.
+// isGrind    = shows in main grid AND grind tab.
+// isPopular  = shows in main grid AND popular tab.
+const GAMES = [
+  // ROLEPLAY
+  { name:"Brookhaven RP",           emoji:"🏠", genre:"roleplay", vibe:"chill",       players:"500k+", placeId:4924922222,      visits:"55B+",  rating:"93%", maxPlayers:"18", genre2:"Roleplay / Sandbox",          dev:"Wolfpaq & Obe", isPopular:true,              desc:"Live your best suburban life. Or rob a bank. No judgement.",                                  fullDesc:"Brookhaven RP is a massively multiplayer open-world sandbox where there are zero rules and infinite vibes. Buy a house, adopt a car, become a criminal, start a family — or just drive around being chaotic. No objectives. No win conditions. Just pure unfiltered roleplay with strangers on the internet." },
+  { name:"Adopt Me!",               emoji:"🐾", genre:"roleplay", vibe:"chill",       players:"400k+", placeId:920587237,       visits:"45B+",  rating:"91%", maxPlayers:"20", genre2:"Roleplay / Trading",          dev:"Uplift Games",               desc:"Trade pets, build homes, flex your inventory on strangers.",                                  fullDesc:"Adopt Me! started as a simple adoption roleplay and somehow became one of the most-played games in Roblox history. The real draw is the pet ecosystem — hatch eggs, raise pets, trade with other players, and accumulate a collection that other players will genuinely envy. Warning: the rare pet economy is surprisingly cutthroat." },
+  { name:"Royale High",             emoji:"👑", genre:"roleplay", vibe:"chill",       players:"80k+",  placeId:735030788,       visits:"8B+",   rating:"90%", maxPlayers:"15", genre2:"Roleplay / Fashion",          dev:"callmehbob",                 desc:"Fairy school, fashion, quests. The aesthetics are immaculate.",                               fullDesc:"A fantasy school roleplay with an emphasis on fashion, socialising, and exploration. Royale High has an absurdly detailed cosmetics system, seasonal events, and a surprisingly engaged community. The halo trading economy is its own entire thing." },
+  { name:"Work at a Pizza Place",   emoji:"🍕", genre:"roleplay", vibe:"chill",       players:"25k+",  placeId:192800,          visits:"1.5B+", rating:"85%", maxPlayers:"20", genre2:"Simulator / Roleplay",        dev:"Dued1",                      desc:"The original Roblox job sim. Someone always ignores their role.",                             fullDesc:"A Roblox classic running since 2008. Players take on roles in a pizza restaurant — cashier, cook, delivery driver — and attempt to work as a team. In practice half the server ignores their job and chaos reigns. Strangely fun." },
+  { name:"Welcome to Bloxburg",     emoji:"🏡", genre:"roleplay", vibe:"chill",       players:"33k+",  placeId:185655149,       visits:"9.9B+", rating:"88%", maxPlayers:"12", genre2:"Roleplay / Life Sim",         dev:"Coffee Stain Studios",       desc:"Build your dream home, get a job, hang out with friends. The Roblox life sim.", isNew:true, fullDesc:"Welcome to Bloxburg is the definitive life simulation game on Roblox. Build and decorate your own home, work jobs like delivery driver or cashier, level up skills like cooking, drive around town, and roleplay with friends. Got a huge map revamp in June 2025 after a live meteor event destroyed the old city. Went free to play in 2024 after years as a paid game. Nearly 10 billion visits." },
+  // PVP
+  { name:"Murder Mystery 2",        emoji:"🔪", genre:"pvp",      vibe:"competitive", players:"100k+", placeId:142823291,       visits:"9B+",   rating:"92%", maxPlayers:"12", genre2:"Social Deduction / Horror",   dev:"Nikilis",                    desc:"One murderer, one sheriff, everyone else panicking. Good vibes.",                            fullDesc:"Up to 12 players. One murderer with a knife. One sheriff with a gun. Everyone else just trying not to die. Rounds are short, chaotic, and intensely suspicious." },
+  { name:"Natural Disaster Survival",emoji:"🌪️",genre:"pvp",     vibe:"casual",      players:"50k+",  placeId:189707,          visits:"2B+",   rating:"87%", maxPlayers:"30", genre2:"Survival / Action",           dev:"Stickmasterluke",            desc:"Survive floods, earthquakes and tornadoes. Team chaos optional.",                            fullDesc:"One of Roblox's oldest and most beloved games. Each round, players must survive a randomly selected natural disaster — tornado, flood, earthquake, acid rain. Simple premise, endlessly chaotic execution." },
+  { name:"Arsenal",                 emoji:"🎯", genre:"pvp",      vibe:"competitive", players:"60k+",  placeId:286090429,       visits:"5B+",   rating:"89%", maxPlayers:"20", genre2:"First-Person Shooter",        dev:"ROLVe Community",            desc:"Fast-paced gun game. Every kill unlocks a new weapon. Chaotic.",                            fullDesc:"Arsenal is Roblox's answer to gun game mode. Every kill earns you a new weapon, cycling from assault rifles all the way down to a rubber duck — first to finish the rotation wins. The first FPS on Roblox to hit 1 billion visits." },
+  { name:"Da Hood",                 emoji:"🌆", genre:"pvp",      vibe:"competitive", players:"80k+",  placeId:2788229376,      visits:"4B+",   rating:"82%", maxPlayers:"25", genre2:"Roleplay / PvP",              dev:"Da Hood Entertainment",      desc:"Street RP with PvP everywhere. Not for the faint of heart.",                                 fullDesc:"Da Hood is a street-themed roleplay game where PvP is everywhere. Rob people, fight rival crews, buy guns and cars, establish dominance. Loud, chaotic, extremely online. Has its own entire subculture. Approach with caution and good ping." },
+  { name:"Knockout!",               emoji:"🐧", genre:"pvp",      vibe:"casual",      players:"20k+",  placeId:136764190843219, visits:"200M+", rating:"91%", maxPlayers:"12", genre2:"PvP / Arena Brawler",         dev:"braxworks",                  desc:"Penguins on ice. Push everyone off. You can't see their aim. Pure chaos.",     fullDesc:"Knockout! is a physics-based arena brawler where every player is a penguin on a slippery icy platform. You can't see your opponent's aim or power — you can only predict and react. Last penguin standing wins." },
+  { name:"RIVALS",                  emoji:"🎮", genre:"pvp",      vibe:"competitive", players:"150k+", placeId:17625359962,     visits:"2B+",   rating:"93%", maxPlayers:"10", genre2:"FPS / Tactical Shooter",      dev:"Nosniy Games",               desc:"1v1 to 5v5 FPS duels. First to 5 kills wins. Won Best Shooter at RIA25.",    fullDesc:"RIVALS is the most polished competitive FPS on Roblox. Challenge players to 1v1 through 5v5 duels where the first team to 5 kills wins the round. Earn keys to unlock weapons and skins, complete contracts for exclusive rewards, and climb the ranked leaderboards. Won Best Shooter Experience at the 2025 Roblox Innovation Awards. Season 3 — The Fame Season — is live now." },
+  { name:"Gunfight Arena",          emoji:"🔫", genre:"pvp",      vibe:"competitive", players:"80k+",  placeId:14518422161,     visits:"500M+", rating:"91%", maxPlayers:"20", genre2:"FPS / Team Deathmatch",       dev:"Gunfight Studio",            desc:"Fast FPS with TDM, KOTH, and flag modes. Updated every Friday.",              fullDesc:"A fast-paced first-person shooter with four modes — Team Deathmatch, King of the Hill, Flag, and Bounty. Build kill streaks to unlock powerful abilities like a radar, forcefield, or grenade launcher. Try to nuke the enemy team. Updated every single Friday without fail. One of the most consistently updated FPS games on the platform." },
+  { name:"Street Life",             emoji:"🏙️", genre:"pvp",      vibe:"competitive", players:"12k+",  placeId:71600459831333,  visits:"100M+", rating:"83%", maxPlayers:"20", genre2:"Open World / PvP RP",         dev:"Street Life Productions",    desc:"London-inspired open world. Get a job, rob a bank, or just cause problems.",   fullDesc:"Street Life drops you into a virtual city modelled on London. Take on legit jobs or go full criminal — rob banks, break into cars, dodge the police. PvP is everywhere. Five career paths, apartments, weapons, and a full open world." },
+  { name:"Deadline",                emoji:"💢", genre:"military", vibe:"competitive", players:"700+",  placeId:12144402492,     visits:"13M+",  rating:"83%", maxPlayers:"20", genre2:"FPS / Hardcore Shooter",      dev:"RECOIL Group",               desc:"Semi-realistic hardcore FPS with the most detailed gun editor on Roblox.",    fullDesc:"Deadline is a hardcore semi-realistic FPS inspired by the Insurgency series. The gun customisation system is absurdly deep — modify every part of your weapon. Stamina, weapon weight, and realistic recoil all matter. Currently in early access and updated constantly. Not for casual players. If you want a sweaty, punishing, rewarding shooter — this is it." },
+  { name:"Slap Battles",            emoji:"👋", genre:"pvp",      vibe:"casual",      players:"60k+",  placeId:6403373529,      visits:"3B+",   rating:"94%", maxPlayers:"10", genre2:"PvP / Party",                 dev:"Tencelll",                   desc:"Slap people off the arena. Unlock 100+ gloves with wild abilities. Chaotic fun.", fullDesc:"Slap Battles is exactly what it sounds like — you slap players off a platform using gloves with wildly different abilities. Over 100 gloves to unlock ranging from simple to completely broken. Some have secret badges tied to them. Massive community, constant updates, and one of the highest-rated games on Roblox at 94%." },
+  { name:"BedWars",                 emoji:"🛏️", genre:"pvp",      vibe:"competitive", players:"70k+",  placeId:6872265039,      visits:"3B+",   rating:"88%", maxPlayers:"8",  genre2:"PvP / Strategy",              dev:"Easy.gg",                    desc:"Protect your bed, destroy theirs, be the last team standing. Classic.",      fullDesc:"The Roblox version of the classic Minecraft game mode. Protect your bed while destroying enemy beds, collect resources, upgrade your base, and eliminate other teams. Multiple kits, ranked mode, seasonal updates, and crossplay support. One of the most polished competitive games on the platform." },
+  // MILITARY
+  { name:"PROJECT APEX",            emoji:"🎯", genre:"military", vibe:"competitive", players:"2k+",   placeId:15509312676,     visits:"10M+",  rating:"91%", maxPlayers:"4",  genre2:"Tactical FPS / Campaign",     dev:"ARCSOFT",                    desc:"Helmet-cam tactical shooter. Mission-driven co-op. Spiritual successor to HELLMET.", fullDesc:"PROJECT APEX is a first-person tactical shooter where everything is experienced through a helmet camera. You and up to 3 players take on a mission-driven campaign covering the history of the TITAN Corporation through genetic experimentation and global crisis. Heavily inspired by Insurgency and HELLMET. Currently in pre-alpha but already exceptionally polished." },
+  { name:"Phantom Forces",          emoji:"🔭", genre:"military", vibe:"competitive", players:"25k+",  placeId:292439477,       visits:"1.8B+", rating:"90%", maxPlayers:"32", genre2:"FPS / Team Deathmatch",       dev:"StyLiS Studios",             desc:"The OG Roblox FPS. 10+ years old, still the benchmark for military shooters.",        fullDesc:"Phantom Forces has been the gold standard for Roblox FPS games since 2015. 100+ weapons, multiple game modes, deep customisation, and a skill ceiling that rewards hours of practice. If you've ever played Battlefield or Call of Duty and wanted that on Roblox, this is the closest it gets. Available on PC, mobile, Xbox and PS5." },
+  // TYCOON (military-themed, shown under tycoon tab)
+  { name:"War Tycoon",              emoji:"⚔️", genre:"tycoon",   vibe:"grind",       players:"15k+",  placeId:4639625707,      visits:"1B+",   rating:"87%", maxPlayers:"12", genre2:"Military Tycoon",             dev:"KBHGAMES",                   desc:"Build a military base, unlock tanks, jets and helicopters. Go to war.",              fullDesc:"Build up your military tycoon with tanks, helicopters, jets and specialist troops, then go to war with other players on the server. Capture hardpoints, participate in deathmatches, and keep expanding your arsenal. Progress saves, and rebirths unlock new gear. Over 1 billion visits and still getting updates." },
+  { name:"Military Warfare Tycoon", emoji:"🏕️", genre:"tycoon",   vibe:"competitive", players:"3k+",   placeId:62124643,        visits:"500M+", rating:"85%", maxPlayers:"10", genre2:"Military Tycoon / FPS",       dev:"Saikou",                     desc:"Build a base, grab 20+ guns and vehicles, and fight other players.",                 fullDesc:"Build your own private military base from scratch, then take the fight to other players with 20+ weapons and a range of military vehicles. Complete missions for in-game rewards and cash bonuses. Mobile friendly, actively updated, and one of the longest-running military tycoons on Roblox." },
+  { name:"Noob Army Tycoon",        emoji:"🪆", genre:"tycoon",   vibe:"grind",       players:"2k+",   placeId:6610021055,      visits:"400M+", rating:"92%", maxPlayers:"6",  genre2:"Military Strategy Tycoon",    dev:"Thinking Project",           desc:"Build a noob army from WW1 to the future. 268 troops, mechs, and chaos.",           fullDesc:"Unlock and deploy 268 different noob troops spanning WW1 all the way to futuristic mechs. Research new units, capture territory to boost income, and battle or ally with other players. Incredibly deep for what looks like a silly premise. 92% rating and free private servers — one of the best value military games on the platform." },
+  { name:"2 Player Military Tycoon",emoji:"💥", genre:"tycoon",   vibe:"competitive", players:"1k+",   placeId:190749311,       visits:"73M+",  rating:"79%", maxPlayers:"22", genre2:"Military Tycoon",             dev:"Frigus",                     desc:"Grab a battle buddy, build a base, launch nukes. Tanks, jets, helicopters.",         fullDesc:"Team up with a partner to build an advanced military base, then take the fight to other teams. Fight with tanks, guns, battleships, fighter jets and attack helicopters. Launch nuclear missiles. Capture oil rigs and forts for cash bonuses. One of the original military tycoons on Roblox, still going strong." },
+  // HORROR
+  { name:"Doors",                   emoji:"🚪", genre:"horror",   vibe:"scary",       players:"150k+", placeId:6516141723,      visits:"3B+",   rating:"93%", maxPlayers:"4",  genre2:"Horror / Roguelite",          dev:"LSPLASH & RediblesQW",       desc:"Open doors. Something's in the hotel. Screaming is optional but expected.",                  fullDesc:"A first-person roguelite horror set in a massive hotel. Your goal: reach Door 100. Between you and it are 20 unique entities, puzzle rooms, and the ever-present threat of Rush. No two runs are the same. Won Best Horror at the 2024 Roblox Innovation Awards." },
+  { name:"The Mimic",               emoji:"👁️", genre:"horror",   vibe:"scary",       players:"40k+",  placeId:6243699076,      visits:"800M+", rating:"89%", maxPlayers:"6",  genre2:"Horror / Story",              dev:"MUCDICH",                    desc:"Japanese horror, cryptic lore, and something always behind you.",                            fullDesc:"The Mimic is Roblox horror done properly. Rooted in Japanese folklore and urban legends — genuinely unsettling atmosphere, cryptic storytelling, and multiple chapters of escalating dread. Not for the faint-hearted." },
+  { name:"Apeirophobia",            emoji:"🌀", genre:"horror",   vibe:"scary",       players:"30k+",  placeId:10277607801,     visits:"1B+",   rating:"88%", maxPlayers:"10", genre2:"Horror / Backrooms",          dev:"Polaroid Studios",           desc:"The backrooms, but make it Roblox. Liminal spaces hit different.",                           fullDesc:"A backrooms-inspired horror experience with multiple levels, each with its own unsettling aesthetic and entity. Empty offices, fluorescent lighting, the feeling that something is very wrong even when nothing is visibly there." },
+  // OBBY
+  { name:"Tower of Hell",           emoji:"⚡", genre:"obby",     vibe:"rage",        players:"80k+",  placeId:1962086868,      visits:"23B+",  rating:"88%", maxPlayers:"24", genre2:"Obby / Parkour",              dev:"YXceptional Studios",        desc:"A neon obby with no checkpoints. Pure suffering, beautifully designed.",                     fullDesc:"Tower of Hell drops you at the bottom of a randomly generated neon tower and dares you to reach the top — with no checkpoints. The tower changes every round so you can't memorise your way out. Just raw skill, rage, and the occasional miracle." },
+  { name:"Obby But You're On a Bike",emoji:"🚲",genre:"obby",     vibe:"casual",      players:"10k+",  placeId:5326455366,      visits:"300M+", rating:"84%", maxPlayers:"12", genre2:"Obby / Comedy",               dev:"Tomarty",                    desc:"Exactly what it says. Surprisingly hard. Surprisingly fun.",                                 fullDesc:"The name is the entire pitch. You ride a bike through an obstacle course. Sounds stupid. It is stupid. It's also way harder than it has any right to be, and you will spend an embarrassing amount of time on trivially-looking sections." },
+  // TYCOON
+  { name:"Jailbreak",               emoji:"🚔", genre:"tycoon",   vibe:"competitive", players:"150k+", placeId:606849621,       visits:"7B+",   rating:"91%", maxPlayers:"26", genre2:"Open World / Action",         dev:"Badimo",                     desc:"Escape prison, rob trains, get chased. The Roblox GTA experience.",                          fullDesc:"Play as a prisoner building a criminal empire, or a cop trying to stop them. Rob banks, trains, museums, jewellery stores. Buy faster cars. Chase or be chased across a massive open world. It's basically Roblox GTA." },
+  { name:"Retail Tycoon 2",         emoji:"🏪", genre:"tycoon",   vibe:"grind",       players:"20k+",  placeId:5306068389,      visits:"600M+", rating:"90%", maxPlayers:"6",  genre2:"Tycoon / Strategy",           dev:"Haggie125",                  desc:"Build a shop empire. Watch it fall apart. Rebuild. Repeat.",                                 fullDesc:"Design and manage your own retail store from scratch. Stock shelves, hire staff, expand floor space, optimise layout for maximum profit. Genuinely satisfying progression with surprising depth. One of the best in the genre." },
+  { name:"Counterfeit Tycoon",      emoji:"💵", genre:"tycoon",   vibe:"grind",       players:"15k+",  placeId:128842186735092, visits:"50M+",  rating:"88%", maxPlayers:"12", genre2:"Tycoon / Tower Defence",      dev:"ShepDance",                  desc:"Print fake money, fend off police raids, rob your neighbours. Totally legal.", fullDesc:"Build an illegal counterfeit money printing empire. Start with a single dodgy printer, scale to a full operation with 200+ upgrades, vehicles, and an armory. Police raid in tower-defence-style waves and other players can steal from you too." },
+  // SIMULATOR
+  { name:"Pet Simulator X",         emoji:"🐶", genre:"simulator",vibe:"grind",       players:"150k+", placeId:6284583030,      visits:"14B+",  rating:"87%", maxPlayers:"8",  genre2:"Simulator / Trading",         dev:"BIG Games",                  desc:"Collect pets, hatch eggs, question how many hours you've spent.",                            fullDesc:"Hatch eggs. Get pets. Make them bigger. Trade them. Get rarer ones. Repeat until the heat death of the universe. There's always a shinier pet just out of reach. The trading economy is enormous and strangely compelling." },
+  { name:"Anime Fighters Simulator",emoji:"⚔️", genre:"simulator",vibe:"grind",       players:"50k+",  placeId:6284583030,      visits:"2B+",   rating:"85%", maxPlayers:"10", genre2:"Simulator / Anime",           dev:"Sulley",                     desc:"Grind through anime worlds, collect fighters, get unreasonably strong.",                      fullDesc:"Collect powerful fighters from various anime universes and use them to auto-battle your way to absurd power levels. New worlds, limited events, and seasonal updates keep the meta shifting." },
+  // ADVENTURE
+  { name:"Blox Fruits",             emoji:"🍊", genre:"adventure",vibe:"grind",       players:"250k+", placeId:2753915549,      visits:"55B+",  rating:"90%", maxPlayers:"20", genre2:"Action / Adventure RPG",      dev:"Gamer Robot Inc.", isPopular:true,           desc:"Eat cursed fruit, become ungodly powerful. Classic Roblox grind.",                           fullDesc:"Inspired by One Piece, Blox Fruits lets you choose your path — master swordsman, fruit user, martial artist, or gunslinger. Sail across seas, fight bosses, discover secrets, and work toward becoming the strongest player alive." },
+  { name:"Refinery Caves 2",        emoji:"⛏️", genre:"adventure",vibe:"chill",       players:"3k+",   placeId:12196278347,     visits:"15M+",  rating:"86%", maxPlayers:"8",  genre2:"Adventure / Sandbox",         dev:"Zik's Dev Team",             desc:"Mine ores, chop trees, catch fish, build your base. Chill but deep.",          fullDesc:"An open-world survival sandbox set on a resource-rich island. Mine ores, chop trees, catch fish, and use an extended building system to upgrade your base. Inspired by Lumber Tycoon 2 with surprising depth — including cryptic lore about a Shadow Organisation." },
+  // GRIND PICKS
+  { name:"Bitcoin Miner",           emoji:"₿",  genre:"simulator",vibe:"grind",       players:"5k+",   placeId:2629642516,      visits:"204M+", rating:"91%", maxPlayers:"6",  genre2:"Simulator / Incremental",     dev:"polandgamebuilders",         desc:"Build a crypto farm from scratch. GPUs, power, ever-increasing numbers.",                    fullDesc:"Start with a single budget GPU and build a full cryptocurrency mining empire. Upgrade rigs, manage power supply, progress through currencies. 200M+ visits since 2018. It's basically FarmVille for people who say 'HODL' unironically.", isGrind:true },
+  { name:"Grow a Garden",           emoji:"🌱", genre:"simulator",vibe:"chill",       players:"100k+", placeId:126884695634066, visits:"35B+",  rating:"90%", maxPlayers:"4",  genre2:"Idle / Farming Sim",          dev:"Jandel", isPopular:true,                     desc:"Plant seeds. Wait. Harvest. Held the all-time concurrent player record.",                    fullDesc:"Created by a 16-year-old in three days, it peaked at 22 million concurrent players, beating Fortnite's all-time record. Plant seeds, they grow offline, sell them, get rarer seeds. Somehow impossible to put down." },
+  { name:"Bee Swarm Simulator",     emoji:"🐝", genre:"simulator",vibe:"grind",       players:"30k+",  placeId:1537690962,      visits:"5B+",   rating:"92%", maxPlayers:"7",  genre2:"Simulator / Incremental",     dev:"Onett",                      desc:"Command a swarm of bees, collect pollen, build a honey empire.",                             fullDesc:"Your bees follow you collecting pollen which converts to honey. Use honey to hatch better bees. Complete quests, fight bosses, unlock new fields. The loop is absurdly satisfying and deep enough to keep you busy for weeks.", isGrind:true },
+  // BRAINROT ONLY
+  { name:"Steal a Brainrot",        emoji:"🧠", genre:"simulator",vibe:"competitive", players:"200k+", placeId:109983668079237, visits:"68B+",  rating:"86%", maxPlayers:"8",  genre2:"Tycoon / PvP",                dev:"SpyderSammy / DoBig Studios",desc:"Buy brainrots, steal from others, defend your base. Broke the all-time CCU record.",         fullDesc:"The game that took over the internet in 2025. Buy brainrot characters from a conveyor belt, earn passive income, then steal from other players while defending your own. Peaked at 25 million concurrent players — the highest ever on any platform. Bruno Mars did a virtual concert in it. Yes, really.", isBrainrot:true },
+  { name:"Plants vs Brainrots",     emoji:"🌻", genre:"simulator",vibe:"chill",       players:"80k+",  placeId:101633885549443, visits:"4.5B+", rating:"90%", maxPlayers:"6",  genre2:"Tower Defence / Idle",        dev:"Jandel / Yo Gurt Studio",    desc:"Plants vs Zombies but the zombies are Italian brainrot memes. Somehow perfect.",             fullDesc:"Take Plants vs Zombies, replace zombies with brainrot meme creatures like Tung Tung Sahur, and add passive income from Steal a Brainrot. Plant seeds, watch plants fight waves of brainrots, collect them for cash, rebirth for more luck. Peaked at 8.6 million CCU.", isBrainrot:true },
+  { name:"Brainrot Evolution",      emoji:"🧬", genre:"simulator",vibe:"grind",       players:"15k+",  placeId:111989938562194, visits:"1.7B+", rating:"97%", maxPlayers:"6",  genre2:"Evolution Simulator",         dev:"Brainrot Evolution",         desc:"Eat stuff, evolve into 170+ brainrot forms. Updated every Saturday.",                        fullDesc:"Start as a basic creature and eat items and enemies to level up. Evolve into iconic brainrot forms — Tralalelo Tralala, Tung Tung Sahur, and 170+ others. Collect pets, complete dungeons, win crates. Gets content updates every Saturday. 97% approval rating.", isBrainrot:true },
+  { name:"Find the Brainrot",       emoji:"🔍", genre:"adventure",vibe:"chill",       players:"4k+",   placeId:136407404714539, visits:"530M+", rating:"93%", maxPlayers:"8",  genre2:"Exploration / Collectathon",  dev:"Moonlight Studios",          desc:"383 brainrots hidden across a map. Find them all. Surprisingly compelling.",                 fullDesc:"A massive hide-and-seek game where 383 brainrot characters are scattered across a huge map. Find them, complete your index, unlock challenges. Sounds simple — you'll spend three hours on it. No PvP, no stealing. Just vibes and discovery.", isBrainrot:true },
+  { name:"Brainrot Tower Defense",  emoji:"🏰", genre:"pvp",      vibe:"competitive", players:"8k+",   placeId:111199269199811, visits:"221M+", rating:"97.5%",maxPlayers:"6", genre2:"Tower Defence / Strategy",    dev:"Brainrot TD Studios",        desc:"Place brainrot units to defend against waves. Polished, 97.5% rating.",                      fullDesc:"A tower defence game where your units are brainrot meme characters. Place them strategically, earn money from defeating enemies, evolve your squad, and survive increasingly chaotic waves. Impressively polished with smooth animations, clean UI, and weekly updates.", isBrainrot:true },
+];
+
+// ── VISIT COUNT (live via roproxy CORS proxy) ─────────────────────────────────
+const visitCache  = {};   // placeId (num) -> formatted string
+const universeMap = {};   // placeId (num) -> universeId (num)
+
+function fmt(n) {
+  if (n >= 1e12) return (n/1e12).toFixed(1) + 'T';
+  if (n >= 1e9)  return (n/1e9).toFixed(1)  + 'B';
+  if (n >= 1e6)  return (n/1e6).toFixed(1)  + 'M';
+  if (n >= 1e3)  return (n/1e3).toFixed(1)  + 'K';
+  return String(n);
+}
+
+async function loadVisits(placeIds) {
+  try {
+    // Step 1 – resolve placeIds we haven't seen yet to universeIds
+    const needUniverse = placeIds.filter(id => universeMap[id] === undefined);
+    if (needUniverse.length) {
+      const chunks = [];
+      for (let i = 0; i < needUniverse.length; i += 100)
+        chunks.push(needUniverse.slice(i, i + 100));
+      for (const chunk of chunks) {
+        try {
+          const r = await fetch(`https://apis.roproxy.com/universes/v1/places?placeIds=${chunk.join(',')}`);
+          if (!r.ok) continue;
+          const d = await r.json();
+          if (d && d.universeIds)
+            for (const item of d.universeIds)
+              universeMap[item.placeId] = item.universeId;
+        } catch(e) {}
+      }
+    }
+
+    // Step 2 – fetch visit counts for universeIds we don't have cached yet
+    const universeIds = placeIds.map(id => universeMap[id]).filter(Boolean);
+    const placeByUniverse = {};
+    for (const pid of placeIds) if (universeMap[pid]) placeByUniverse[universeMap[pid]] = pid;
+
+    const needVisits = universeIds.filter(uid => {
+      const pid = placeByUniverse[uid];
+      return pid !== undefined && visitCache[pid] === undefined;
+    });
+    if (!needVisits.length) return;
+
+    const chunks = [];
+    for (let i = 0; i < needVisits.length; i += 50)
+      chunks.push(needVisits.slice(i, i + 50));
+    for (const chunk of chunks) {
+      try {
+        const r = await fetch(`https://games.roproxy.com/v1/games?universeIds=${chunk.join(',')}`);
+        if (!r.ok) continue;
+        const d = await r.json();
+        if (!d || !d.data) continue;
+        for (const g of d.data) {
+          const pid = placeByUniverse[g.id];
+          if (pid !== undefined) visitCache[pid] = fmt(g.visits);
+        }
+      } catch(e) {}
+    }
+
+    refreshVisitUI();
+  } catch(e) {}
+}
+
+function refreshVisitUI() {
+  document.querySelectorAll('[data-pid]').forEach(el => {
+    const pid = Number(el.dataset.pid);
+    if (visitCache[pid] !== undefined) {
+      el.textContent = visitCache[pid] + ' visits';
+      el.classList.add('live');
+    }
+  });
+  const mv = document.getElementById('modal-visit');
+  if (mv) {
+    const pid = Number(mv.dataset.pid);
+    if (visitCache[pid] !== undefined) {
+      mv.textContent = visitCache[pid];
+      mv.classList.add('live');
+    }
+  }
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+let activeFilter = 'all';
+let searchTerm   = '';
+
+function render() {
+  const grid = document.getElementById('grid');
+  const q    = searchTerm;
+
+  const filtered = GAMES.filter(g => {
+    if (activeFilter === 'brainrot') return !!g.isBrainrot;
+    if (g.isBrainrot) return false;                          // never in other tabs
+    if (activeFilter === 'grind')   return !!g.isGrind;
+    if (activeFilter === 'popular') return !!g.isPopular;
+    const matchGenre  = activeFilter === 'all' || g.genre === activeFilter;
+    const matchSearch = !q || g.name.toLowerCase().includes(q) || g.genre.includes(q) || g.vibe.includes(q) || g.desc.toLowerCase().includes(q);
+    return matchGenre && matchSearch;
+  });
+
+  document.getElementById('count-num').textContent = filtered.length;
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty">no games found — try different filters.</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(g => {
+    const idx   = GAMES.indexOf(g);
+    const badge = g.isBrainrot ? '<span class="badge brainrot">BRAINROT</span>'
+                : g.isGrind   ? '<span class="badge grind">GRIND</span>'
+                : g.isPopular ? '<span class="badge popular">🔥 HOT</span>'
+                : g.isNew     ? '<span class="badge new">NEW</span>' : '';
+    const cached = visitCache[g.placeId];
+    return `
+      <article class="card" onclick="openModal(${idx})" tabindex="0" role="button">
+        ${badge}
+        <div class="card-emoji">${g.emoji}</div>
+        <div class="card-name">${g.name}</div>
+        <div class="card-desc">${g.desc}</div>
+        <div class="players"><span class="dot"></span>${g.players} playing</div>
+        <div class="visits-display${cached?' live':''}" data-pid="${g.placeId}">${(cached||g.visits)+' visits'}</div>
+        <div class="card-tags">
+          <span class="tag genre">${g.genre}</span>
+          <span class="tag vibe">${g.vibe}</span>
+          ${g.isGrind    ? '<span class="tag grind-tag">grind pick</span>'  : ''}
+          ${g.isBrainrot ? '<span class="tag brainrot-tag">brainrot</span>' : ''}
+          ${g.isPopular && activeFilter === 'popular' ? '<span class="tag" style="color:#fb923c;border-color:rgba(251,146,60,0.2)">🔥 popular</span>' : ''}
+        </div>
+      </article>`;
+  }).join('');
+
+  loadVisits(filtered.map(g => g.placeId));
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function openModal(idx) {
+  const g = GAMES[idx];
+  document.getElementById('modal-icon').textContent    = g.emoji;
+  document.getElementById('modal-title').textContent   = g.name;
+  document.getElementById('modal-dev').textContent     = 'by ' + g.dev;
+  document.getElementById('modal-players').textContent = g.players;
+  document.getElementById('modal-desc').textContent    = g.fullDesc;
+
+  document.getElementById('modal-tags').innerHTML = `
+    <span class="modal-tag genre">${g.genre2}</span>
+    <span class="modal-tag vibe">${g.vibe}</span>
+    ${g.isGrind    ? '<span class="modal-tag grind-tag">⚡ grind pick</span>'  : ''}
+    ${g.isBrainrot ? '<span class="modal-tag brainrot-tag">🧠 brainrot</span>' : ''}`;
+
+  const cached = visitCache[g.placeId];
+  document.getElementById('modal-stats').innerHTML = `
+    <div class="stat">
+      <div class="stat-label">total visits</div>
+      <div class="stat-val${cached?' live':''}" id="modal-visit" data-pid="${g.placeId}">${cached || g.visits}</div>
+    </div>
+    <div class="stat"><div class="stat-label">rating</div><div class="stat-val">${g.rating}</div></div>
+    <div class="stat"><div class="stat-label">max players</div><div class="stat-val">${g.maxPlayers}</div></div>
+    <div class="stat"><div class="stat-label">genre</div><div class="stat-val">${g.genre}</div></div>`;
+
+  document.getElementById('modal-play').href = `https://www.roblox.com/games/${g.placeId}`;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('modal-close').focus();
+  if (!cached) loadVisits([g.placeId]);
+}
+
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+
+// ── EVENTS ────────────────────────────────────────────────────────────────────
+document.getElementById('modal-close').addEventListener('click', closeModal);
+document.getElementById('overlay').addEventListener('click', e => { if (e.target === document.getElementById('overlay')) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.getElementById('grid').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') e.target.click(); });
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    render();
+  });
+});
+document.getElementById('search').addEventListener('input', e => {
+  searchTerm = e.target.value.toLowerCase().trim();
+  render();
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+render();
+// Refresh visits every 5 minutes
+setInterval(() => loadVisits(GAMES.map(g => g.placeId)), 5 * 60 * 1000);
+</script>
+
+</body>
+</html>
